@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const activitySelect = document.getElementById("activity");
   const signupForm = document.getElementById("signup-form");
   const messageDiv = document.getElementById("message");
+  const confirmModal = document.getElementById("confirmModal");
 
   // Add a small helper to sanitize participant names
   function escapeHtml(text) {
@@ -18,6 +19,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Clear loading message
       activitiesList.innerHTML = "";
+      // Reset activity select options (keep placeholder)
+      activitySelect.innerHTML = '<option value="">-- Select an activity --</option>';
 
       // Populate activities list
       Object.entries(activities).forEach(([name, details]) => {
@@ -29,7 +32,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Build participants list markup
         const participantsItems = participants.length
-          ? participants.map((p) => `<li>${escapeHtml(p)}</li>`).join("")
+          ? participants
+              .map(
+                (p) =>
+                  `<li><span class="participant-email">${escapeHtml(p)}</span><button class="participant-remove" data-activity="${escapeHtml(
+                    name
+                  )}" data-email="${escapeHtml(p)}" title="Remove participant">✕</button></li>`
+              )
+              .join("")
           : '<li class="no-participants">No participants yet</li>';
 
         activityCard.innerHTML = `
@@ -47,6 +57,71 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
 
         activitiesList.appendChild(activityCard);
+
+        // Attach click handler for remove buttons (delegation)
+        const participantsListEl = activityCard.querySelector(".participants-list");
+        participantsListEl.addEventListener("click", async (ev) => {
+          const btn = ev.target.closest(".participant-remove");
+          if (!btn) return;
+
+          const activityName = btn.dataset.activity;
+          const email = btn.dataset.email;
+
+          if (!activityName || !email) return;
+
+          // Show custom confirmation modal
+          confirmModal.querySelector(".modal-content").textContent = 
+            `Are you sure you want to unregister ${email} from ${activityName}?`;
+          
+          // Show modal and handle confirmation
+          confirmModal.classList.remove("hidden");
+          
+          // Show confirmation modal and wait for user choice
+          const confirmed = await new Promise((resolve) => {
+            const handleModalClick = (event) => {
+              const action = event.target.dataset.action;
+              if (action === "confirm" || action === "cancel") {
+                confirmModal.classList.add("hidden");
+                confirmModal.removeEventListener("click", handleModalClick);
+                resolve(action === "confirm");
+              }
+            };
+            confirmModal.addEventListener("click", handleModalClick);
+          });
+          
+          if (!confirmed) return;
+          
+          try {
+            const res = await fetch(
+              `/activities/${encodeURIComponent(activityName)}/participants?email=${encodeURIComponent(
+                email
+              )}`,
+              { method: "DELETE" }
+            );
+
+            const result = await res.json();
+
+            if (res.ok) {
+              messageDiv.textContent = result.message || "Participant removed";
+              messageDiv.className = "success";
+              messageDiv.classList.remove("hidden");
+
+              // Refresh the activities list to show updated participants
+              fetchActivities();
+            } else {
+              messageDiv.textContent = result.detail || "Failed to remove participant";
+              messageDiv.className = "error";
+              messageDiv.classList.remove("hidden");
+            }
+
+            setTimeout(() => messageDiv.classList.add("hidden"), 4000);
+          } catch (err) {
+            console.error("Error removing participant:", err);
+            messageDiv.textContent = "Network error when removing participant";
+            messageDiv.className = "error";
+            messageDiv.classList.remove("hidden");
+          }
+        });
 
         // Add option to select dropdown
         const option = document.createElement("option");
@@ -81,6 +156,8 @@ document.addEventListener("DOMContentLoaded", () => {
         messageDiv.textContent = result.message;
         messageDiv.className = "success";
         signupForm.reset();
+        // Refresh activities list so the new participant appears immediately
+        fetchActivities();
       } else {
         messageDiv.textContent = result.detail || "An error occurred";
         messageDiv.className = "error";

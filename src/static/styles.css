@@ -136,6 +136,70 @@ button:hover {
   display: none;
 }
 
+/* Modal dialog styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-dialog {
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.modal-title {
+  color: #1a237e;
+  margin: 0 0 16px 0;
+  font-size: 1.2em;
+}
+
+.modal-content {
+  margin-bottom: 24px;
+  color: #37474f;
+  line-height: 1.4;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.modal-actions button {
+  min-width: 80px;
+}
+
+.modal-actions button.secondary {
+  background-color: transparent;
+  color: #666;
+  border: 1px solid #ddd;
+}
+
+.modal-actions button.secondary:hover {
+  background-color: #f5f5f5;
+  border-color: #ccc;
+}
+
+.modal-actions button.danger {
+  background-color: #c62828;
+}
+
+.modal-actions button.danger:hover {
+  background-color: #d32f2f;
+}
+
 footer {
   text-align: center;
   margin-top: 30px;
@@ -156,8 +220,8 @@ footer {
 }
 
 .participants-list {
-  list-style: disc;
-  padding-left: 20px;
+  list-style: none; /* hide default bullets */
+  padding-left: 0;
   margin: 0;
   max-height: 120px;
   overflow-y: auto;
@@ -169,14 +233,34 @@ footer {
 }
 
 .participants-list li {
-  padding: 6px 4px;
+  padding: 6px 8px;
   border-bottom: 1px dashed #f1f3f5;
   color: #263238;
   font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .participants-list li:last-child {
   border-bottom: none;
+}
+
+/* Small remove button next to each participant */
+.participant-remove {
+  background: transparent;
+  border: none;
+  color: #c62828;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  padding: 4px 6px;
+  border-radius: 4px;
+}
+
+.participant-remove:hover {
+  background-color: rgba(198,40,40,0.08);
 }
 
 /* Muted style when no participants yet */
