@@ -46,15 +46,15 @@
     </footer>
 
     <!-- Confirmation Modal -->
-    <div id="confirmModal" class="modal-overlay hidden">
+    <div id="confirmModal" class="modal-overlay hidden" role="dialog" aria-labelledby="modalTitle" aria-modal="true">
       <div class="modal-dialog">
-        <h3 class="modal-title">Confirm Unregister</h3>
-        <div class="modal-content">
+        <h3 id="modalTitle" class="modal-title">Confirm Unregister</h3>
+        <div class="modal-content" id="modalContent">
           Are you sure you want to unregister this participant?
         </div>
         <div class="modal-actions">
-          <button class="secondary" data-action="cancel">Cancel</button>
-          <button class="danger" data-action="confirm">Unregister</button>
+          <button type="button" class="secondary" id="cancelBtn">Cancel</button>
+          <button type="button" class="danger" id="confirmBtn">Unregister</button>
         </div>
       </div>
     </div>

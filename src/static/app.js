@@ -4,6 +4,60 @@ document.addEventListener("DOMContentLoaded", () => {
   const signupForm = document.getElementById("signup-form");
   const messageDiv = document.getElementById("message");
   const confirmModal = document.getElementById("confirmModal");
+  const modalContent = document.getElementById("modalContent");
+  const cancelBtn = document.getElementById("cancelBtn");
+  const confirmBtn = document.getElementById("confirmBtn");
+  
+  let modalResolver = null;
+  
+  function showModal(message) {
+    return new Promise((resolve) => {
+      modalContent.textContent = message;
+      confirmModal.classList.remove("hidden");
+      modalResolver = resolve;
+    });
+  }
+  
+  function hideModal() {
+    confirmModal.classList.add("hidden");
+    if (modalResolver) {
+      modalResolver(false);
+      modalResolver = null;
+    }
+  }
+  
+  // Modal event handlers
+  cancelBtn.addEventListener("click", () => {
+    if (modalResolver) {
+      modalResolver(false);
+      modalResolver = null;
+    }
+    confirmModal.classList.add("hidden");
+  });
+  
+  confirmBtn.addEventListener("click", () => {
+    if (modalResolver) {
+      modalResolver(true);
+      modalResolver = null;
+    }
+    confirmModal.classList.add("hidden");
+  });
+  
+  // Close modal when clicking outside or pressing Escape
+  confirmModal.addEventListener("click", (event) => {
+    if (event.target === confirmModal) {
+      hideModal();
+    }
+  });
+  
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !confirmModal.classList.contains("hidden")) {
+      hideModal();
+    }
+  });
+  
+  // Ensure modal starts hidden
+  confirmModal.classList.add("hidden");
 
   // Add a small helper to sanitize participant names
   function escapeHtml(text) {
@@ -69,25 +123,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
           if (!activityName || !email) return;
 
-          // Show custom confirmation modal
-          confirmModal.querySelector(".modal-content").textContent = 
-            `Are you sure you want to unregister ${email} from ${activityName}?`;
-          
-          // Show modal and handle confirmation
-          confirmModal.classList.remove("hidden");
-          
-          // Show confirmation modal and wait for user choice
-          const confirmed = await new Promise((resolve) => {
-            const handleModalClick = (event) => {
-              const action = event.target.dataset.action;
-              if (action === "confirm" || action === "cancel") {
-                confirmModal.classList.add("hidden");
-                confirmModal.removeEventListener("click", handleModalClick);
-                resolve(action === "confirm");
-              }
-            };
-            confirmModal.addEventListener("click", handleModalClick);
-          });
+          // Show confirmation modal and wait for response
+          const confirmed = await showModal(
+            `Are you sure you want to unregister ${email} from ${activityName}?`
+          );
           
           if (!confirmed) return;
           
